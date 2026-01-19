@@ -8,7 +8,7 @@ const links = defineCollection({
     icon: z.string(),
     order: z.number(),
     embed: z.string().optional(),
-    feed: z.enum(['github']).optional(),
+    feed: z.enum(['github', 'github-org']).optional(),
   }),
 });
 

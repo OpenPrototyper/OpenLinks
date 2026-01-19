@@ -1,15 +1,17 @@
 ---
 import GitHubActivity from './GitHubActivity.tsx';
+import GitHubOrgActivity from './GitHubOrgActivity.tsx';
 
 interface Props {
   name: string;
   url: string;
   icon: string;
-  feed?: 'github';
+  feed?: 'github' | 'github-org';
   username?: string;
+  org?: string;
 }
 
-const { name, url, icon, feed, username } = Astro.props;
+const { name, url, icon, feed, username, org } = Astro.props;
 
 const brandColors: Record<string, { color: string; glow: string }> = {
   github: { color: '#ffffff', glow: 'rgba(255,255,255,0.15)' },
@@ -42,6 +44,14 @@ const icons: Record<string, string> = {
 };
 
 const iconSvg = icons[icon] || icons.portfolio;
+
+// User/Org type icons (small, inline)
+const userIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+const orgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9h1"></path><path d="M9 13h1"></path><path d="M9 17h1"></path></svg>`;
+
+// Get the handle to display
+const handle = username || org;
+const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon : null;
 ---
 
 <div
@@ -49,6 +59,7 @@ const iconSvg = icons[icon] || icons.portfolio;
   style={`--brand-color: ${color}; --brand-glow: ${glow};`}
   data-expanded="false"
   data-username={username}
+  data-org={org}
 >
   <!-- Header (always visible) -->
   <div class="card-header flex items-center w-full p-4">
@@ -56,10 +67,19 @@ const iconSvg = icons[icon] || icons.portfolio;
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      class="flex items-center gap-4 flex-1"
+      class="flex items-center gap-4 flex-1 min-w-0"
     >
-      <span class="text-[#a1a1a1] group-hover:text-[var(--brand-color)] transition-colors" set:html={iconSvg} />
-      <span class="text-[#fafafa] font-medium">{name}</span>
+      <span class="text-[#a1a1a1] group-hover:text-[var(--brand-color)] transition-colors flex-shrink-0" set:html={iconSvg} />
+      <span class="flex items-center gap-2 min-w-0">
+        <span class="text-[#fafafa] font-medium">{name}</span>
+        {handle && (
+          <span class="flex items-center gap-1 text-[#525252] text-sm truncate">
+            <span>·</span>
+            <span class="text-[#a1a1a1]" set:html={typeIcon} />
+            <span class="truncate">@{handle}</span>
+          </span>
+        )}
+      </span>
     </a>
 
     {feed && (
@@ -97,46 +117,10 @@ const iconSvg = icons[icon] || icons.portfolio;
     <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
       <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
       <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
-        <div class="flex gap-[3px] flex-nowrap">
+        <div class="contrib-preview flex gap-[3px] flex-nowrap justify-end" data-username={username}>
+          <!-- Placeholder squares while loading -->
           <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
           <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#006d32] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#26a641] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#39d353] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#006d32] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#26a641] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#39d353] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#006d32] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#26a641] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#39d353] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#006d32] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#26a641] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#39d353] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#006d32] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#0e4429] flex-shrink-0"></div>
-          <div class="w-[8px] h-[8px] rounded-sm bg-[#26a641] flex-shrink-0"></div>
           <div class="w-[8px] h-[8px] rounded-sm bg-[#161b22] flex-shrink-0"></div>
         </div>
       </div>
@@ -148,6 +132,27 @@ const iconSvg = icons[icon] || icons.portfolio;
     <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
       <div class="px-4 pb-4 pt-2">
         <GitHubActivity client:idle username={username} profileUrl={url} />
+      </div>
+    </div>
+  )}
+
+  <!-- GitHub Org: Peek preview (visible when collapsed) -->
+  {feed === 'github-org' && org && (
+    <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
+      <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
+        <div class="org-repos-preview flex gap-3 flex-nowrap text-xs text-[#58a6ff]" data-org={org}>
+          <span class="text-[#525252]">Loading repos...</span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- GitHub Org: Expandable content -->
+  {feed === 'github-org' && org && (
+    <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
+      <div class="px-4 pb-4 pt-2">
+        <GitHubOrgActivity client:idle org={org} profileUrl={url} />
       </div>
     </div>
   )}
@@ -322,10 +327,11 @@ const iconSvg = icons[icon] || icons.portfolio;
   document.querySelectorAll('.expandable-card').forEach((card) => {
     const btn = card.querySelector('.expand-btn');
     const username = card.getAttribute('data-username');
+    const org = card.getAttribute('data-org');
 
     if (!btn) return;
 
-    // Load recent activity count from localStorage cache
+    // Load recent activity count from localStorage cache (user)
     if (username) {
       try {
         const cached = localStorage.getItem(`github-activity-${username}`);
@@ -339,10 +345,35 @@ const iconSvg = icons[icon] || icons.portfolio;
       }
     }
 
+    // Load recent activity count from localStorage cache (org)
+    if (org) {
+      try {
+        const cached = localStorage.getItem(`github-org-activity-${org}`);
+        if (cached) {
+          const data = JSON.parse(cached);
+          const recentCount = countRecentActivities(data.events);
+          updateActivityDot(card, recentCount);
+        }
+      } catch {
+        // Silent fail
+      }
+    }
+
     btn.addEventListener('click', () => {
       const isExpanded = card.getAttribute('data-expanded') === 'true';
-      card.setAttribute('data-expanded', String(!isExpanded));
-      btn.setAttribute('aria-expanded', String(!isExpanded));
+      const willExpand = !isExpanded;
+      card.setAttribute('data-expanded', String(willExpand));
+      btn.setAttribute('aria-expanded', String(willExpand));
+
+      // Track expansion with PostHog
+      if (willExpand && typeof window !== 'undefined' && (window as any).posthog) {
+        const feedType = username ? 'github' : org ? 'github-org' : 'unknown';
+        const handle = username || org || 'unknown';
+        (window as any).posthog.capture('activity_feed_expanded', {
+          feed_type: feedType,
+          handle: handle,
+        });
+      }
 
       // Trigger bounce animation
       btn.classList.remove('bounce');
@@ -351,7 +382,7 @@ const iconSvg = icons[icon] || icons.portfolio;
     });
   });
 
-  // Update dot when activity is fetched (custom event from React)
+  // Update dot when user activity is fetched (custom event from React)
   document.addEventListener('github-activity-loaded', ((e: CustomEvent) => {
     const { username, recentCount } = e.detail;
     const card = document.querySelector(`[data-username="${username}"]`);
@@ -359,4 +390,124 @@ const iconSvg = icons[icon] || icons.portfolio;
       updateActivityDot(card, recentCount);
     }
   }) as EventListener);
+
+  // Update dot when org activity is fetched (custom event from React)
+  document.addEventListener('github-org-activity-loaded', ((e: CustomEvent) => {
+    const { org, recentCount } = e.detail;
+    const card = document.querySelector(`[data-org="${org}"]`);
+    if (card) {
+      updateActivityDot(card, recentCount);
+    }
+  }) as EventListener);
+
+  // Format star count (e.g., 1200 -> 1.2k)
+  function formatStars(num: number): string {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}m`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
+    return num.toString();
+  }
+
+  // Update org repos preview with actual repo names and stars
+  function updateOrgReposPreview(org: string, repos: Array<{ name: string; stars: number }>) {
+    const preview = document.querySelector(`.org-repos-preview[data-org="${org}"]`);
+    if (!preview || !repos || repos.length === 0) return;
+
+    const html = repos.slice(0, 4).map(r =>
+      `<span class="flex items-center gap-1">${r.name} <span class="text-yellow-400">★</span><span class="text-[#a1a1a1]">${formatStars(r.stars)}</span></span>`
+    ).join('<span class="text-[#525252]">·</span>');
+    preview.innerHTML = html;
+  }
+
+  // Load org repos from cache on init
+  document.querySelectorAll('.org-repos-preview').forEach((preview) => {
+    const org = preview.getAttribute('data-org');
+    if (!org) return;
+
+    // Try cache first
+    try {
+      const cached = localStorage.getItem(`github-org-activity-${org}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.repos) {
+          updateOrgReposPreview(org, data.repos);
+          return;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+
+    // Fetch if no cache
+    fetch(`/.netlify/functions/github-org-activity?org=${org}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.repos) {
+          updateOrgReposPreview(org, data.repos);
+          // Save to cache
+          try {
+            data.fetchedAt = Date.now();
+            localStorage.setItem(`github-org-activity-${org}`, JSON.stringify(data));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  });
+
+  // Contribution level colors
+  const levelColors = [
+    'bg-[#161b22]', // level 0
+    'bg-[#0e4429]', // level 1
+    'bg-[#006d32]', // level 2
+    'bg-[#26a641]', // level 3
+    'bg-[#39d353]', // level 4
+  ];
+
+  // Update contribution preview with real data
+  function updateContribPreview(username: string, days: Array<{ level: number }>) {
+    const preview = document.querySelector(`.contrib-preview[data-username="${username}"]`);
+    if (!preview || !days || days.length === 0) return;
+
+    // Get last 40 days for the preview
+    const recentDays = days.slice(-40);
+    const html = recentDays.map(day => {
+      const colorClass = levelColors[day.level] || levelColors[0];
+      return `<div class="w-[8px] h-[8px] rounded-sm ${colorClass} flex-shrink-0"></div>`;
+    }).join('');
+    preview.innerHTML = html;
+  }
+
+  // Load contribution data from cache on init
+  document.querySelectorAll('.contrib-preview').forEach((preview) => {
+    const username = preview.getAttribute('data-username');
+    if (!username) return;
+
+    // Try cache first
+    try {
+      const cached = localStorage.getItem(`github-activity-${username}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.contributions?.days) {
+          updateContribPreview(username, data.contributions.days);
+          return;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+
+    // Fetch if no cache
+    fetch(`/.netlify/functions/github-activity?username=${username}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.contributions?.days) {
+          updateContribPreview(username, data.contributions.days);
+          // Save to cache
+          try {
+            data.fetchedAt = Date.now();
+            localStorage.setItem(`github-activity-${username}`, JSON.stringify(data));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  });
 </script>

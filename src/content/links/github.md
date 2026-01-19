@@ -1,5 +1,5 @@
 ---
-name: "GitHub (aimarket)"
+name: "GitHub"
 url: "https://github.com/aimarket"
 icon: "github"
 order: 1

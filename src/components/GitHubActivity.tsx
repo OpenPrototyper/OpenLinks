@@ -13,7 +13,17 @@ interface ContributionDay {
   level: number;
 }
 
+interface GitHubUser {
+  name: string;
+  login: string;
+  avatar: string;
+  bio: string;
+  repoCount: number;
+  followers: number;
+}
+
 interface GitHubData {
+  user: GitHubUser | null;
   events: GitHubEvent[];
   contributions: {
     days: ContributionDay[];
@@ -21,6 +31,13 @@ interface GitHubData {
   };
   cached: boolean;
   fetchedAt: number;
+}
+
+// Format large numbers (e.g., 1200 -> 1.2k)
+function formatNumber(num: number): string {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}m`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
+  return num.toString();
 }
 
 interface Props {
@@ -217,11 +234,18 @@ export default function GitHubActivity({ username, profileUrl }: Props) {
   if (loading && !activity) {
     return (
       <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full shimmer" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 shimmer rounded w-1/3" />
+            <div className="h-3 shimmer rounded w-1/2" />
+          </div>
+        </div>
         <div className="h-20 shimmer rounded-lg" />
         <div className="space-y-2">
-          <div className="h-4 shimmer rounded w-3/4" />
-          <div className="h-4 shimmer rounded w-1/2" style={{ animationDelay: '0.1s' }} />
-          <div className="h-4 shimmer rounded w-2/3" style={{ animationDelay: '0.2s' }} />
+          <div className="h-4 shimmer rounded w-3/4" style={{ animationDelay: '0.1s' }} />
+          <div className="h-4 shimmer rounded w-1/2" style={{ animationDelay: '0.2s' }} />
+          <div className="h-4 shimmer rounded w-2/3" style={{ animationDelay: '0.3s' }} />
         </div>
       </div>
     );
@@ -294,6 +318,26 @@ export default function GitHubActivity({ username, profileUrl }: Props) {
 
   return (
     <div className="space-y-4" onMouseEnter={handlePrefetch} onTouchStart={handlePrefetch}>
+      {/* User Header */}
+      {activity.user && (
+        <div className="flex items-center gap-3 animate-[fadeSlideIn_0.4s_ease-out_forwards]">
+          <img
+            src={activity.user.avatar}
+            alt={activity.user.name}
+            className="w-10 h-10 rounded-full border border-[#333]"
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-medium truncate">{activity.user.name}</h3>
+            {activity.user.bio && (
+              <p className="text-[#a1a1a1] text-xs truncate">{activity.user.bio}</p>
+            )}
+            <p className="text-[#525252] text-xs">
+              {activity.user.repoCount} repos · {formatNumber(activity.user.followers)} followers
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Contribution Graph */}
       {weeks.length > 0 && (
         <div className="overflow-x-auto">

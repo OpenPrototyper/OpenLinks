@@ -28,6 +28,7 @@ pnpm-debug.log*
 
 # claude code settings
 .claude/
+CLAUDE.md
 
 # internal docs/plans
 docs/

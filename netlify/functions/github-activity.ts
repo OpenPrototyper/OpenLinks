@@ -18,8 +18,25 @@ interface ContributionDay {
   level: number;
 }
 
+interface GitHubUser {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  bio: string | null;
+  public_repos: number;
+  followers: number;
+}
+
 interface CachedData {
   data: {
+    user: {
+      name: string;
+      login: string;
+      avatar: string;
+      bio: string;
+      repoCount: number;
+      followers: number;
+    };
     events: ProcessedEvent[];
     contributions: { days: ContributionDay[]; total: number };
   };
@@ -81,6 +98,27 @@ function processEvent(event: GitHubEvent): ProcessedEvent | null {
 
     default:
       return null;
+  }
+}
+
+async function fetchUserInfo(username: string): Promise<GitHubUser | null> {
+  try {
+    const res = await fetch(`https://api.github.com/users/${username}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'OpenLinks-Activity-Feed',
+      },
+    });
+
+    if (!res.ok) {
+      console.error(`GitHub User API error: ${res.status}`);
+      return null;
+    }
+
+    return await res.json() as GitHubUser;
+  } catch (err) {
+    console.error('Error fetching user info:', err);
+    return null;
   }
 }
 
@@ -168,12 +206,24 @@ export default async (req: Request, context: Context) => {
   }
 
   // Fetch fresh data
-  const [events, contributions] = await Promise.all([
+  const [userInfo, events, contributions] = await Promise.all([
+    fetchUserInfo(username),
     fetchEvents(username),
     fetchContributions(username),
   ]);
 
-  const data = { events, contributions };
+  const data = {
+    user: userInfo ? {
+      name: userInfo.name || userInfo.login,
+      login: userInfo.login,
+      avatar: userInfo.avatar_url,
+      bio: userInfo.bio || '',
+      repoCount: userInfo.public_repos,
+      followers: userInfo.followers,
+    } : null,
+    events,
+    contributions,
+  };
 
   // Update cache
   cache[username] = { data, timestamp: now };

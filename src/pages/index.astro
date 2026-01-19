@@ -8,8 +8,8 @@ import { getCollection } from 'astro:content';
 const links = await getCollection('links');
 const sortedLinks = links.sort((a, b) => a.data.order - b.data.order);
 
-// Helper to extract GitHub username from URL
-function getGitHubUsername(url: string): string | undefined {
+// Helper to extract GitHub username/org from URL
+function getGitHubIdentifier(url: string): string | undefined {
   const match = url.match(/github\.com\/([^\/]+)/);
   return match ? match[1] : undefined;
 }
@@ -61,7 +61,8 @@ function getGitHubUsername(url: string): string | undefined {
               url={link.data.url}
               icon={link.data.icon}
               feed={link.data.feed}
-              username={link.data.feed === 'github' ? getGitHubUsername(link.data.url) : undefined}
+              username={link.data.feed === 'github' ? getGitHubIdentifier(link.data.url) : undefined}
+              org={link.data.feed === 'github-org' ? getGitHubIdentifier(link.data.url) : undefined}
             />
           ) : (
             <LinkCard
