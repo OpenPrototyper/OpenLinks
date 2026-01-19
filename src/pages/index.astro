@@ -1,0 +1,88 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import LinkCard from '../components/LinkCard.astro';
+import { getCollection } from 'astro:content';
+
+const links = await getCollection('links');
+const sortedLinks = links.sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base>
+  <!-- Share Button -->
+  <button
+    id="share-btn"
+    class="fixed top-4 right-4 p-3 bg-[#141414] border border-[#262626] rounded-full transition-all duration-200 hover:border-[#a1a1a1] hover:scale-105 z-50"
+    aria-label="Share"
+  >
+    <svg id="share-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#a1a1a1]">
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+    </svg>
+    <svg id="check-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500 hidden">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </button>
+
+  <main class="flex flex-col items-center justify-center min-h-screen px-4 py-12">
+    <div class="w-full max-w-md space-y-8">
+      <!-- Avatar -->
+      <div class="flex flex-col items-center space-y-4">
+        <Image
+          src="/logo.png"
+          alt="Open Prototype"
+          width={96}
+          height={96}
+          loading="eager"
+          class="w-24 h-24 rounded-full border-2 border-[#262626]"
+        />
+        <div class="text-center">
+          <h1 class="text-2xl font-bold font-mono">Open Prototype</h1>
+          <p class="text-[#a1a1a1] mt-1">Transparent Engineering</p>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div class="flex flex-col gap-3">
+        {sortedLinks.map((link) => (
+          <LinkCard
+            name={link.data.name}
+            url={link.data.url}
+            icon={link.data.icon}
+          />
+        ))}
+      </div>
+
+      <!-- Footer -->
+      <p class="text-center text-sm">
+        <a href="https://openprototype.dev" target="_blank" rel="noopener noreferrer" class="text-[#a1a1a1] hover:text-white transition-colors">
+          openprototype.dev
+        </a>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    const shareBtn = document.getElementById('share-btn');
+    const shareIcon = document.getElementById('share-icon');
+    const checkIcon = document.getElementById('check-icon');
+
+    shareBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        shareIcon?.classList.add('hidden');
+        checkIcon?.classList.remove('hidden');
+
+        setTimeout(() => {
+          shareIcon?.classList.remove('hidden');
+          checkIcon?.classList.add('hidden');
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    });
+  </script>
+</Base>
