@@ -11,6 +11,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
 - **Static site** - No database, no server-side code
 - **Fast** - Built with Astro, minimal JavaScript
 - **Analytics** - PostHog integration for tracking
+- **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
 - **Share button** - Copy URL to clipboard
 - **Dark theme** - Clean, modern design
