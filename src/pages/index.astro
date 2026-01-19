@@ -2,10 +2,17 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import LinkCard from '../components/LinkCard.astro';
+import ExpandableCard from '../components/ExpandableCard.astro';
 import { getCollection } from 'astro:content';
 
 const links = await getCollection('links');
 const sortedLinks = links.sort((a, b) => a.data.order - b.data.order);
+
+// Helper to extract GitHub username from URL
+function getGitHubUsername(url: string): string | undefined {
+  const match = url.match(/github\.com\/([^\/]+)/);
+  return match ? match[1] : undefined;
+}
 ---
 
 <Base>
@@ -48,11 +55,21 @@ const sortedLinks = links.sort((a, b) => a.data.order - b.data.order);
       <!-- Links -->
       <div class="flex flex-col gap-3">
         {sortedLinks.map((link) => (
-          <LinkCard
-            name={link.data.name}
-            url={link.data.url}
-            icon={link.data.icon}
-          />
+          link.data.feed ? (
+            <ExpandableCard
+              name={link.data.name}
+              url={link.data.url}
+              icon={link.data.icon}
+              feed={link.data.feed}
+              username={link.data.feed === 'github' ? getGitHubUsername(link.data.url) : undefined}
+            />
+          ) : (
+            <LinkCard
+              name={link.data.name}
+              url={link.data.url}
+              icon={link.data.icon}
+            />
+          )
         ))}
       </div>
 

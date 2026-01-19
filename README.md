@@ -10,6 +10,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
 
 - **Static site** - No database, no server-side code
 - **Fast** - Built with Astro, minimal JavaScript
+- **GitHub Activity Preview** - Expandable cards showing live contribution graphs and recent activity
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -19,7 +20,9 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
 ## Stack
 
 - [Astro](https://astro.build/) - Static site framework
+- [React](https://react.dev/) - Interactive components
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Netlify Functions](https://www.netlify.com/products/functions/) - Serverless API
 - [PostHog](https://posthog.com/) - Analytics
 
 ## Quick Start
@@ -39,17 +42,20 @@ name: "GitHub"
 url: "https://github.com/username"
 icon: "github"
 order: 1
+feed: "github"  # Optional: enables activity preview
 ---
 ```
 
 **Available icons:** `github`, `twitter`, `linkedin`, `discord`, `youtube`, `tiktok`, `reddit`, `substack`, `email`, `portfolio`
+
+**Activity feeds:** Currently supports `github` - shows contribution graph and recent activity
 
 ## Deployment
 
 Build command: `npm run build`
 Output directory: `dist`
 
-Deploy to Netlify, Vercel, Cloudflare Pages, or any static host.
+**Note:** The GitHub activity feature requires Netlify Functions. Deploy to Netlify for full functionality, or adapt the `netlify/functions/github-activity.ts` for other serverless platforms.
 
 ## License
 

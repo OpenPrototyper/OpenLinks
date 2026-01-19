@@ -31,3 +31,6 @@ pnpm-debug.log*
 
 # internal docs/plans
 docs/
+
+# Local Netlify folder
+.netlify

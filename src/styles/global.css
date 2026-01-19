@@ -1,1 +1,81 @@
 @import "tailwindcss";
+
+/* Custom scrollbar for activity panel */
+.activity-panel {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+.activity-panel ::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+
+.activity-panel ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.activity-panel ::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.activity-panel ::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Contribution graph container scrollbar */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Staggered fade-in animation for activity items */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #1a1a1a 0%,
+    #2a2a2a 50%,
+    #1a1a1a 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}

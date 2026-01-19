@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-01-19
+
+### Added
+- **GitHub Activity Preview** - Expandable dropdown on link cards showing live GitHub activity
+  - Contribution graph with interactive tooltips
+  - Recent activity feed (commits, PRs, issues, stars, forks)
+  - Contribution streak indicator with fire emoji
+  - "NEW" badges for activity within last 24 hours
+  - Blue notification dot showing recent activity count
+- **Netlify Functions** - Serverless API endpoint for GitHub data
+  - Fetches from GitHub Events API and contribution graph
+  - 5-minute server-side caching to respect rate limits
+  - 1-hour client-side localStorage caching
+- **Micro-interactions & Animations**
+  - Haptic-style bounce on expand button click
+  - Staggered fade-in for activity items
+  - Shimmer loading skeleton effect
+  - Glow pulse animation when card is expanded
+  - Peek preview of contribution graph when collapsed
+- **React Integration** - Added `@astrojs/react` for interactive components
+
+### Changed
+- Link cards with `feed: "github"` now show expandable activity preview
+- Content schema updated to support optional `feed` field
+
 ## [1.1.0] - 2026-01-19
 
 ### Added
