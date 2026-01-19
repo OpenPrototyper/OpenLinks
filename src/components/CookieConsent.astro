@@ -166,11 +166,6 @@
       banner.classList.remove('hidden');
     }
 
-    // If previously accepted, upgrade PostHog to use cookies
-    if (consent === 'accepted' && window.posthog && window.posthog.config) {
-      window.posthog.config.persistence = 'localStorage+cookie';
-    }
-
     function createConfetti() {
       const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3', '#a8d8ea'];
       const shapes = ['circle', 'square', 'triangle'];
@@ -209,9 +204,10 @@
     acceptBtn.addEventListener('click', function() {
       localStorage.setItem(CONSENT_KEY, 'accepted');
       hideBanner(true);
-      if (window.posthog && window.posthog.config) {
-        window.posthog.config.persistence = 'localStorage+cookie';
-      }
+      // Reload after animation so PostHog reinitializes with full tracking
+      setTimeout(function() {
+        window.location.reload();
+      }, 800);
     });
 
     declineBtn.addEventListener('click', function() {
