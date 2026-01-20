@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-01-19
+
+### Added
+- **YouTube Activity Feed** - Recent videos with thumbnails and channel stats
+  - 2x2 video grid with clickable thumbnails
+  - Video duration badges on thumbnails
+  - View count and like count per video (when available via Invidious API)
+  - Channel header with avatar, name, and @handle
+  - Subscriber count and total video count
+  - "NEW" badge for videos uploaded within last 7 days
+  - Play button overlay on hover
+  - Peek preview showing latest video title when collapsed
+  - No API key required - uses YouTube RSS feed as primary data source
+  - Optional enhanced data via Invidious API (views, likes, duration, subscribers)
+
+### Changed
+- Content schema now supports `youtube` feed type with `youtubeChannelId` and `youtubeHandle` fields
+- ExpandableCard supports eight feed types: `github`, `github-org`, `discord`, `linkedin`, `substack`, `reddit`, `tiktok`, `youtube`
+- Updated platform-feed-patterns.md documentation
+
+### Technical Notes
+- YouTube RSS feed provides: video titles, thumbnails, descriptions, publish dates (last 15 videos)
+- Invidious API (when available) adds: view counts, like counts, video duration, subscriber count
+- Public Invidious instances currently have APIs disabled; enhanced data requires self-hosted instance or future API availability
+
 ## [1.7.0] - 2026-01-19
 
 ### Added

@@ -18,6 +18,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
   - **Substack** - Recent posts with likes, comments, restacks
   - **Reddit** - User activity, karma stats, posts and comments
   - **TikTok** - Profile stats, video thumbnails with click-through
+  - **YouTube** - Recent videos with thumbnails, views, and channel stats
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -66,6 +67,7 @@ feed: "github"  # Optional: enables activity preview
 | `substack` | Recent posts with engagement stats | `publication` (subdomain name) |
 | `reddit` | User activity, karma stats, posts/comments | `redditUsername` (without u/) |
 | `tiktok` | Profile stats, video thumbnails | `tiktokUsername`, optional `tiktokVideoIds` |
+| `youtube` | Recent videos with thumbnails and stats | `youtubeChannelId`, `youtubeHandle` |
 
 **Discord example:**
 ```md
@@ -139,6 +141,21 @@ tiktokVideoIds:
 ```
 
 The TikTok username is your username without the `@` prefix. Video IDs are the numeric IDs from your video URLs (the number after `/video/`). Videos are optional - if not specified, only profile stats will be shown. Note: Profile data uses web scraping which may occasionally break if TikTok changes their site.
+
+**YouTube example:**
+```md
+---
+name: "YouTube"
+url: "https://www.youtube.com/@YourChannel"
+icon: "youtube"
+order: 9
+feed: "youtube"
+youtubeChannelId: "UCxxxxxxxxxxxxxxxxxx"
+youtubeHandle: "YourChannel"
+---
+```
+
+To find your YouTube channel ID: Go to [YouTube Studio](https://studio.youtube.com) > Settings > Channel > Basic Info. The channel ID starts with "UC" and is 24 characters. The handle is your `@username` without the `@`. No API key required - uses YouTube RSS feed for video data.
 
 ## Deployment
 

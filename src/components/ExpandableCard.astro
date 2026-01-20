@@ -5,12 +5,13 @@ import DiscordActivity from './DiscordActivity.tsx';
 import SubstackActivity from './SubstackActivity.tsx';
 import RedditActivity from './RedditActivity.tsx';
 import TikTokActivity from './TikTokActivity.tsx';
+import YouTubeActivity from './YouTubeActivity.tsx';
 
 interface Props {
   name: string;
   url: string;
   icon: string;
-  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit' | 'tiktok';
+  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit' | 'tiktok' | 'youtube';
   username?: string;
   org?: string;
   serverId?: string;
@@ -19,9 +20,11 @@ interface Props {
   redditUsername?: string;
   tiktokUsername?: string;
   tiktokVideoIds?: string[]; // Optional: specific video IDs to embed
+  youtubeChannelId?: string;
+  youtubeHandle?: string;
 }
 
-const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername, tiktokUsername, tiktokVideoIds } = Astro.props;
+const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername, tiktokUsername, tiktokVideoIds, youtubeChannelId, youtubeHandle } = Astro.props;
 
 const brandColors: Record<string, { color: string; glow: string }> = {
   github: { color: '#ffffff', glow: 'rgba(255,255,255,0.15)' },
@@ -61,7 +64,7 @@ const orgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" 
 const linkedinIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="6" height="14"></rect><rect x="16" y="7" width="6" height="14"></rect><rect x="9" y="3" width="6" height="18"></rect></svg>`;
 
 // Get the handle to display (no handle for Discord - server name shown in feed, no icon for Substack - already shown)
-const handle = username || org || linkedinUsername || publication || redditUsername || tiktokUsername;
+const handle = username || org || linkedinUsername || publication || redditUsername || tiktokUsername || youtubeHandle;
 const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon : feed === 'linkedin' ? linkedinIcon : null;
 ---
 
@@ -75,6 +78,7 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
   data-publication={publication}
   data-reddit-username={redditUsername}
   data-tiktok-username={tiktokUsername}
+  data-channel-id={youtubeChannelId}
 >
   <!-- Header (always visible) -->
   <div class="card-header flex items-center w-full p-4">
@@ -335,6 +339,28 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       </div>
     </div>
   )}
+
+  <!-- YouTube: Peek preview (visible when collapsed) -->
+  {feed === 'youtube' && youtubeChannelId && (
+    <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
+      <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
+        <div class="youtube-preview flex gap-2 items-center text-xs" data-channel-id={youtubeChannelId}>
+          <span class="text-[#ff0000]">▶</span>
+          <span class="text-[#a1a1a1]">Loading videos...</span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- YouTube: Expandable content -->
+  {feed === 'youtube' && youtubeChannelId && (
+    <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
+      <div class="px-4 pb-4 pt-2">
+        <YouTubeActivity client:idle channelId={youtubeChannelId} profileUrl={url} />
+      </div>
+    </div>
+  )}
 </div>
 
 <style>
@@ -499,6 +525,24 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
     return posts.filter(p => isSubstackRecent(p.time)).length;
   }
 
+  // Check if YouTube video is recent (within 7 days for videos since they're less frequent)
+  function isYouTubeRecent(timeStr: string): boolean {
+    if (!timeStr) return false;
+    if (timeStr.endsWith('m')) return true; // minutes
+    if (timeStr.endsWith('h')) return true; // hours (within 24h)
+    if (timeStr.endsWith('d')) {
+      const days = parseInt(timeStr);
+      return days <= 7; // Within 7 days
+    }
+    return false;
+  }
+
+  // Count recent YouTube videos
+  function countYouTubeRecentVideos(videos: Array<{ time: string }>): number {
+    if (!videos || !Array.isArray(videos)) return 0;
+    return videos.filter(v => isYouTubeRecent(v.time)).length;
+  }
+
   // Update the activity dot and tooltip with count
   function updateActivityDot(card: Element, count: number) {
     const dot = card.querySelector('.activity-dot');
@@ -603,6 +647,21 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       }
     }
 
+    // Load YouTube recent activity count from localStorage cache
+    const youtubeChannelId = card.getAttribute('data-channel-id');
+    if (youtubeChannelId) {
+      try {
+        const cached = localStorage.getItem(`youtube-activity-${youtubeChannelId}`);
+        if (cached) {
+          const data = JSON.parse(cached);
+          const recentCount = countYouTubeRecentVideos(data.videos);
+          updateActivityDot(card, recentCount);
+        }
+      } catch {
+        // Silent fail
+      }
+    }
+
     btn.addEventListener('click', () => {
       const isExpanded = card.getAttribute('data-expanded') === 'true';
       const willExpand = !isExpanded;
@@ -615,8 +674,9 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
         const publication = card.getAttribute('data-publication');
         const redditUser = card.getAttribute('data-reddit-username');
         const tiktokUser = card.getAttribute('data-tiktok-username');
-        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : redditUser ? 'reddit' : tiktokUser ? 'tiktok' : 'unknown';
-        const handle = username || org || serverId || publication || redditUser || tiktokUser || 'unknown';
+        const channelId = card.getAttribute('data-channel-id');
+        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : redditUser ? 'reddit' : tiktokUser ? 'tiktok' : channelId ? 'youtube' : 'unknown';
+        const handle = username || org || serverId || publication || redditUser || tiktokUser || channelId || 'unknown';
         (window as any).posthog.capture('activity_feed_expanded', {
           feed_type: feedType,
           handle: handle,
@@ -689,6 +749,16 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       // For TikTok we don't show activity count (no recent activity API)
       // Just update the preview
       updateTikTokPreview(username);
+    }
+  }) as EventListener);
+
+  // Update when YouTube activity is fetched (custom event from React)
+  document.addEventListener('youtube-activity-loaded', ((e: CustomEvent) => {
+    const { channelId, recentCount } = e.detail;
+    const card = document.querySelector(`[data-channel-id="${channelId}"]`);
+    if (card) {
+      updateActivityDot(card, recentCount);
+      updateYouTubePreview(channelId);
     }
   }) as EventListener);
 
@@ -1036,6 +1106,67 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
             localStorage.setItem(`tiktok-activity-${tiktokUsername}`, JSON.stringify(data));
           } catch {}
           updateTikTokPreview(tiktokUsername);
+        }
+      })
+      .catch(() => {});
+  });
+
+  // Update YouTube preview with latest video title
+  function updateYouTubePreview(channelId: string) {
+    const preview = document.querySelector(`.youtube-preview[data-channel-id="${channelId}"]`);
+    if (!preview) return;
+
+    try {
+      const cached = localStorage.getItem(`youtube-activity-${channelId}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.videos && data.videos.length > 0) {
+          const latestVideo = data.videos[0];
+          const title = latestVideo.title.length > 35
+            ? latestVideo.title.slice(0, 35) + '...'
+            : latestVideo.title;
+          preview.innerHTML = `
+            <span class="text-[#ff0000]">▶</span>
+            <span class="text-[#e5e5e5] truncate">${title}</span>
+            <span class="text-[#525252]">· ${latestVideo.time}</span>
+          `;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+  }
+
+  // Load YouTube preview from cache on init
+  document.querySelectorAll('.youtube-preview').forEach((preview) => {
+    const channelId = preview.getAttribute('data-channel-id');
+    if (!channelId) return;
+
+    // Try cache first
+    try {
+      const cached = localStorage.getItem(`youtube-activity-${channelId}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.videos && data.videos.length > 0) {
+          updateYouTubePreview(channelId);
+          return;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+
+    // Fetch if no cache
+    fetch(`/.netlify/functions/youtube-activity?channelId=${channelId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.videos && data.videos.length > 0) {
+          // Save to cache
+          try {
+            data.fetchedAt = Date.now();
+            localStorage.setItem(`youtube-activity-${channelId}`, JSON.stringify(data));
+          } catch {}
+          updateYouTubePreview(channelId);
         }
       })
       .catch(() => {});
