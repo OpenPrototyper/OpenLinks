@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-01-19
+
+### Added
+- **Discord Server Activity Feed** - Live server stats via Discord Widget API
+  - Online member count with live indicator
+  - Voice channel activity with user counts
+  - Member avatars with status indicators (online/idle/dnd)
+  - Currently playing activities display
+  - Join Server button with invite link
+  - Graceful handling when widget is disabled
+- **GitHub Organization Activity Feed** - Activity preview for GitHub orgs
+  - Popular repositories with star counts
+  - Recent org activity feed
+  - Peek preview showing top repos when collapsed
+
+### Changed
+- Content schema now supports `discord` feed type with `serverId` field
+- ExpandableCard supports three feed types: `github`, `github-org`, `discord`
+
 ## [1.2.0] - 2026-01-19
 
 ### Added

@@ -63,6 +63,7 @@ function getGitHubIdentifier(url: string): string | undefined {
               feed={link.data.feed}
               username={link.data.feed === 'github' ? getGitHubIdentifier(link.data.url) : undefined}
               org={link.data.feed === 'github-org' ? getGitHubIdentifier(link.data.url) : undefined}
+              serverId={link.data.feed === 'discord' ? link.data.serverId : undefined}
             />
           ) : (
             <LinkCard

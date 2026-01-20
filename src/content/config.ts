@@ -8,7 +8,8 @@ const links = defineCollection({
     icon: z.string(),
     order: z.number(),
     embed: z.string().optional(),
-    feed: z.enum(['github', 'github-org']).optional(),
+    feed: z.enum(['github', 'github-org', 'discord']).optional(),
+    serverId: z.string().optional(), // Discord server ID for widget API
   }),
 });
 

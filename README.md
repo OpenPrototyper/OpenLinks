@@ -10,7 +10,10 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
 
 - **Static site** - No database, no server-side code
 - **Fast** - Built with Astro, minimal JavaScript
-- **GitHub Activity Preview** - Expandable cards showing live contribution graphs and recent activity
+- **Live Activity Feeds** - Expandable cards with real-time platform data
+  - **GitHub** - Contribution graphs, recent activity, streak tracking
+  - **GitHub Org** - Popular repos, organization activity
+  - **Discord** - Online members, voice channels, current activities
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -48,14 +51,34 @@ feed: "github"  # Optional: enables activity preview
 
 **Available icons:** `github`, `twitter`, `linkedin`, `discord`, `youtube`, `tiktok`, `reddit`, `substack`, `email`, `portfolio`
 
-**Activity feeds:** Currently supports `github` - shows contribution graph and recent activity
+### Activity Feeds
+
+| Feed | Description | Required Fields |
+|------|-------------|-----------------|
+| `github` | Contribution graph, recent activity, streak | URL with GitHub username |
+| `github-org` | Popular repos, org activity | URL with GitHub org name |
+| `discord` | Online members, voice channels, activities | `serverId` (Discord server ID) |
+
+**Discord example:**
+```md
+---
+name: "Discord"
+url: "https://discord.gg/your-invite"
+icon: "discord"
+order: 5
+feed: "discord"
+serverId: "1234567890123456789"
+---
+```
+
+To get your Discord server ID: Enable Developer Mode in Discord settings, then right-click your server icon and select "Copy Server ID". You must also enable the Server Widget in Server Settings > Widget.
 
 ## Deployment
 
 Build command: `npm run build`
 Output directory: `dist`
 
-**Note:** The GitHub activity feature requires Netlify Functions. Deploy to Netlify for full functionality, or adapt the `netlify/functions/github-activity.ts` for other serverless platforms.
+**Note:** Activity feeds require Netlify Functions. Deploy to Netlify for full functionality, or adapt the functions in `netlify/functions/` for other serverless platforms.
 
 ## License
 
