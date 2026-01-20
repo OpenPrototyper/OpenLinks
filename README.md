@@ -16,6 +16,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
   - **Discord** - Online members, voice channels, current activities
   - **LinkedIn** - Quick actions (view profile, message, connect)
   - **Substack** - Recent posts with likes, comments, restacks
+  - **Reddit** - User activity, karma stats, posts and comments
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -62,6 +63,7 @@ feed: "github"  # Optional: enables activity preview
 | `discord` | Online members, voice channels, activities | `serverId` (Discord server ID) |
 | `linkedin` | Quick actions (profile, message, connect) | `linkedinUsername` |
 | `substack` | Recent posts with engagement stats | `publication` (subdomain name) |
+| `reddit` | User activity, karma stats, posts/comments | `redditUsername` (without u/) |
 
 **Discord example:**
 ```md
@@ -104,6 +106,20 @@ publication: "yourname"
 ```
 
 The publication is the subdomain of your Substack (e.g., `yourname` for `yourname.substack.com`). No API token required.
+
+**Reddit example:**
+```md
+---
+name: "Reddit"
+url: "https://www.reddit.com/user/yourname/"
+icon: "reddit"
+order: 7
+feed: "reddit"
+redditUsername: "yourname"
+---
+```
+
+The Reddit username is your username without the `u/` prefix. No API token required - uses public Reddit JSON API.
 
 ## Deployment
 

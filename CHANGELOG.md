@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-01-19
+
+### Added
+- **Reddit Activity Feed** - Live user activity with karma and posts/comments
+  - Profile header with avatar, username, and badges (Premium, Verified)
+  - Karma breakdown showing post karma vs comment karma
+  - Account age display
+  - Recent activity feed showing posts and comments
+  - Posts shown with cyan `+` icon, comments with blue `💬` icon
+  - Score display with star icon for high-score items (100+)
+  - Distinguished badges for admin/moderator posts
+  - "NEW" badge for activity within last 24 hours
+  - Peek preview showing username and karma when collapsed
+  - No API token required - uses public Reddit JSON API
+
+### Changed
+- Content schema now supports `reddit` feed type with `redditUsername` field
+- ExpandableCard supports six feed types: `github`, `github-org`, `discord`, `linkedin`, `substack`, `reddit`
+
 ## [1.5.0] - 2026-01-19
 
 ### Added

@@ -3,20 +3,22 @@ import GitHubActivity from './GitHubActivity.tsx';
 import GitHubOrgActivity from './GitHubOrgActivity.tsx';
 import DiscordActivity from './DiscordActivity.tsx';
 import SubstackActivity from './SubstackActivity.tsx';
+import RedditActivity from './RedditActivity.tsx';
 
 interface Props {
   name: string;
   url: string;
   icon: string;
-  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack';
+  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit';
   username?: string;
   org?: string;
   serverId?: string;
   linkedinUsername?: string;
   publication?: string;
+  redditUsername?: string;
 }
 
-const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication } = Astro.props;
+const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername } = Astro.props;
 
 const brandColors: Record<string, { color: string; glow: string }> = {
   github: { color: '#ffffff', glow: 'rgba(255,255,255,0.15)' },
@@ -56,7 +58,7 @@ const orgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" 
 const linkedinIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="6" height="14"></rect><rect x="16" y="7" width="6" height="14"></rect><rect x="9" y="3" width="6" height="18"></rect></svg>`;
 
 // Get the handle to display (no handle for Discord - server name shown in feed, no icon for Substack - already shown)
-const handle = username || org || linkedinUsername || publication;
+const handle = username || org || linkedinUsername || publication || redditUsername;
 const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon : feed === 'linkedin' ? linkedinIcon : null;
 ---
 
@@ -68,6 +70,7 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
   data-org={org}
   data-server-id={serverId}
   data-publication={publication}
+  data-reddit-username={redditUsername}
 >
   <!-- Header (always visible) -->
   <div class="card-header flex items-center w-full p-4">
@@ -281,6 +284,28 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
     <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
       <div class="px-4 pb-4 pt-2">
         <SubstackActivity client:idle publication={publication} profileUrl={url} />
+      </div>
+    </div>
+  )}
+
+  <!-- Reddit: Peek preview (visible when collapsed) -->
+  {feed === 'reddit' && redditUsername && (
+    <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
+      <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
+        <div class="reddit-preview flex gap-2 items-center text-xs" data-reddit-username={redditUsername}>
+          <span class="text-[#ff4500]">+</span>
+          <span class="text-[#a1a1a1]">Loading activity...</span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Reddit: Expandable content -->
+  {feed === 'reddit' && redditUsername && (
+    <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
+      <div class="px-4 pb-4 pt-2">
+        <RedditActivity client:idle username={redditUsername} profileUrl={url} />
       </div>
     </div>
   )}
@@ -537,6 +562,21 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       }
     }
 
+    // Load Reddit recent activity count from localStorage cache
+    const redditUsername = card.getAttribute('data-reddit-username');
+    if (redditUsername) {
+      try {
+        const cached = localStorage.getItem(`reddit-activity-${redditUsername.toLowerCase()}`);
+        if (cached) {
+          const data = JSON.parse(cached);
+          const recentCount = countRecentActivities(data.activities);
+          updateActivityDot(card, recentCount);
+        }
+      } catch {
+        // Silent fail
+      }
+    }
+
     btn.addEventListener('click', () => {
       const isExpanded = card.getAttribute('data-expanded') === 'true';
       const willExpand = !isExpanded;
@@ -547,8 +587,9 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       if (willExpand && typeof window !== 'undefined' && (window as any).posthog) {
         const serverId = card.getAttribute('data-server-id');
         const publication = card.getAttribute('data-publication');
-        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : 'unknown';
-        const handle = username || org || serverId || publication || 'unknown';
+        const redditUser = card.getAttribute('data-reddit-username');
+        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : redditUser ? 'reddit' : 'unknown';
+        const handle = username || org || serverId || publication || redditUser || 'unknown';
         (window as any).posthog.capture('activity_feed_expanded', {
           feed_type: feedType,
           handle: handle,
@@ -599,6 +640,17 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       updateActivityDot(card, recentCount);
       // Also update the preview
       updateSubstackPreview(publication);
+    }
+  }) as EventListener);
+
+  // Update dot when Reddit activity is fetched (custom event from React)
+  document.addEventListener('reddit-activity-loaded', ((e: CustomEvent) => {
+    const { username, recentCount } = e.detail;
+    const card = document.querySelector(`[data-reddit-username="${username}"]`);
+    if (card) {
+      updateActivityDot(card, recentCount);
+      // Also update the preview
+      updateRedditPreview(username);
     }
   }) as EventListener);
 
@@ -815,6 +867,66 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
             localStorage.setItem(`substack-activity-${publication}`, JSON.stringify(data));
           } catch {}
           updateSubstackPreview(publication);
+        }
+      })
+      .catch(() => {});
+  });
+
+  // Update Reddit preview with latest activity
+  function updateRedditPreview(username: string) {
+    const preview = document.querySelector(`.reddit-preview[data-reddit-username="${username}"]`);
+    if (!preview) return;
+
+    try {
+      const cached = localStorage.getItem(`reddit-activity-${username.toLowerCase()}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.user) {
+          const karma = data.user.totalKarma >= 1000
+            ? `${(data.user.totalKarma / 1000).toFixed(1)}k`
+            : data.user.totalKarma;
+          preview.innerHTML = `
+            <span class="text-[#ff4500]">●</span>
+            <span class="text-[#e5e5e5]">u/${data.user.name}</span>
+            <span class="text-[#525252]">· ${karma} karma</span>
+          `;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+  }
+
+  // Load Reddit preview from cache on init
+  document.querySelectorAll('.reddit-preview').forEach((preview) => {
+    const redditUsername = preview.getAttribute('data-reddit-username');
+    if (!redditUsername) return;
+
+    // Try cache first
+    try {
+      const cached = localStorage.getItem(`reddit-activity-${redditUsername.toLowerCase()}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.user) {
+          updateRedditPreview(redditUsername);
+          return;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+
+    // Fetch if no cache
+    fetch(`/.netlify/functions/reddit-activity?username=${redditUsername}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          // Save to cache
+          try {
+            data.fetchedAt = Date.now();
+            localStorage.setItem(`reddit-activity-${redditUsername.toLowerCase()}`, JSON.stringify(data));
+          } catch {}
+          updateRedditPreview(redditUsername);
         }
       })
       .catch(() => {});
