@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-01-19
+
+### Added
+- **TikTok Activity Feed** - Profile stats and video previews
+  - Profile header with avatar, nickname, and verified badge
+  - Stats grid showing followers, likes, and video count
+  - Featured videos with thumbnail previews (click to open on TikTok)
+  - Horizontal scroll for multiple video thumbnails
+  - Peek preview showing follower/like counts when collapsed
+  - No OAuth required - uses web scraping for profile data
+  - Video thumbnails via TikTok oEmbed API
+
+### Changed
+- Content schema now supports `tiktok` feed type with `tiktokUsername` and `tiktokVideoIds` fields
+- ExpandableCard supports seven feed types: `github`, `github-org`, `discord`, `linkedin`, `substack`, `reddit`, `tiktok`
+
+### Known Limitations
+- Profile data uses web scraping which may break if TikTok changes their site structure
+- Videos must be manually configured via `tiktokVideoIds` (no auto-discovery without OAuth)
+- Thumbnail URLs expire periodically and refresh on next fetch
+
 ## [1.6.0] - 2026-01-19
 
 ### Added

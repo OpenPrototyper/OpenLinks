@@ -17,6 +17,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
   - **LinkedIn** - Quick actions (view profile, message, connect)
   - **Substack** - Recent posts with likes, comments, restacks
   - **Reddit** - User activity, karma stats, posts and comments
+  - **TikTok** - Profile stats, video thumbnails with click-through
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -64,6 +65,7 @@ feed: "github"  # Optional: enables activity preview
 | `linkedin` | Quick actions (profile, message, connect) | `linkedinUsername` |
 | `substack` | Recent posts with engagement stats | `publication` (subdomain name) |
 | `reddit` | User activity, karma stats, posts/comments | `redditUsername` (without u/) |
+| `tiktok` | Profile stats, video thumbnails | `tiktokUsername`, optional `tiktokVideoIds` |
 
 **Discord example:**
 ```md
@@ -120,6 +122,23 @@ redditUsername: "yourname"
 ```
 
 The Reddit username is your username without the `u/` prefix. No API token required - uses public Reddit JSON API.
+
+**TikTok example:**
+```md
+---
+name: "TikTok"
+url: "https://www.tiktok.com/@yourname"
+icon: "tiktok"
+order: 8
+feed: "tiktok"
+tiktokUsername: "yourname"
+tiktokVideoIds:
+  - "7123456789012345678"
+  - "7234567890123456789"
+---
+```
+
+The TikTok username is your username without the `@` prefix. Video IDs are the numeric IDs from your video URLs (the number after `/video/`). Videos are optional - if not specified, only profile stats will be shown. Note: Profile data uses web scraping which may occasionally break if TikTok changes their site.
 
 ## Deployment
 

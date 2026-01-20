@@ -4,21 +4,24 @@ import GitHubOrgActivity from './GitHubOrgActivity.tsx';
 import DiscordActivity from './DiscordActivity.tsx';
 import SubstackActivity from './SubstackActivity.tsx';
 import RedditActivity from './RedditActivity.tsx';
+import TikTokActivity from './TikTokActivity.tsx';
 
 interface Props {
   name: string;
   url: string;
   icon: string;
-  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit';
+  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit' | 'tiktok';
   username?: string;
   org?: string;
   serverId?: string;
   linkedinUsername?: string;
   publication?: string;
   redditUsername?: string;
+  tiktokUsername?: string;
+  tiktokVideoIds?: string[]; // Optional: specific video IDs to embed
 }
 
-const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername } = Astro.props;
+const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername, tiktokUsername, tiktokVideoIds } = Astro.props;
 
 const brandColors: Record<string, { color: string; glow: string }> = {
   github: { color: '#ffffff', glow: 'rgba(255,255,255,0.15)' },
@@ -58,7 +61,7 @@ const orgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" 
 const linkedinIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="6" height="14"></rect><rect x="16" y="7" width="6" height="14"></rect><rect x="9" y="3" width="6" height="18"></rect></svg>`;
 
 // Get the handle to display (no handle for Discord - server name shown in feed, no icon for Substack - already shown)
-const handle = username || org || linkedinUsername || publication || redditUsername;
+const handle = username || org || linkedinUsername || publication || redditUsername || tiktokUsername;
 const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon : feed === 'linkedin' ? linkedinIcon : null;
 ---
 
@@ -71,6 +74,7 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
   data-server-id={serverId}
   data-publication={publication}
   data-reddit-username={redditUsername}
+  data-tiktok-username={tiktokUsername}
 >
   <!-- Header (always visible) -->
   <div class="card-header flex items-center w-full p-4">
@@ -306,6 +310,28 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
     <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
       <div class="px-4 pb-4 pt-2">
         <RedditActivity client:idle username={redditUsername} profileUrl={url} />
+      </div>
+    </div>
+  )}
+
+  <!-- TikTok: Peek preview (visible when collapsed) -->
+  {feed === 'tiktok' && tiktokUsername && (
+    <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
+      <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
+        <div class="tiktok-preview flex gap-2 items-center text-xs" data-tiktok-username={tiktokUsername}>
+          <span class="text-[#00f2ea]">♪</span>
+          <span class="text-[#a1a1a1]">Loading stats...</span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- TikTok: Expandable content -->
+  {feed === 'tiktok' && tiktokUsername && (
+    <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
+      <div class="px-4 pb-4 pt-2">
+        <TikTokActivity client:idle username={tiktokUsername} profileUrl={url} videoIds={tiktokVideoIds || []} />
       </div>
     </div>
   )}
@@ -588,8 +614,9 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
         const serverId = card.getAttribute('data-server-id');
         const publication = card.getAttribute('data-publication');
         const redditUser = card.getAttribute('data-reddit-username');
-        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : redditUser ? 'reddit' : 'unknown';
-        const handle = username || org || serverId || publication || redditUser || 'unknown';
+        const tiktokUser = card.getAttribute('data-tiktok-username');
+        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : redditUser ? 'reddit' : tiktokUser ? 'tiktok' : 'unknown';
+        const handle = username || org || serverId || publication || redditUser || tiktokUser || 'unknown';
         (window as any).posthog.capture('activity_feed_expanded', {
           feed_type: feedType,
           handle: handle,
@@ -651,6 +678,17 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       updateActivityDot(card, recentCount);
       // Also update the preview
       updateRedditPreview(username);
+    }
+  }) as EventListener);
+
+  // Update when TikTok activity is fetched (custom event from React)
+  document.addEventListener('tiktok-activity-loaded', ((e: CustomEvent) => {
+    const { username, hasData } = e.detail;
+    const card = document.querySelector(`[data-tiktok-username="${username}"]`);
+    if (card && hasData) {
+      // For TikTok we don't show activity count (no recent activity API)
+      // Just update the preview
+      updateTikTokPreview(username);
     }
   }) as EventListener);
 
@@ -927,6 +965,77 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
             localStorage.setItem(`reddit-activity-${redditUsername.toLowerCase()}`, JSON.stringify(data));
           } catch {}
           updateRedditPreview(redditUsername);
+        }
+      })
+      .catch(() => {});
+  });
+
+  // Format number for TikTok stats (e.g., 1200000 -> 1.2M)
+  function formatTikTokNumber(num: number): string {
+    if (num >= 1000000000) return `${(num / 1000000000).toFixed(1)}B`;
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  }
+
+  // Update TikTok preview with user stats
+  function updateTikTokPreview(username: string) {
+    const preview = document.querySelector(`.tiktok-preview[data-tiktok-username="${username}"]`);
+    if (!preview) return;
+
+    try {
+      const cached = localStorage.getItem(`tiktok-activity-${username}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.user) {
+          const followers = formatTikTokNumber(data.user.followers);
+          const likes = formatTikTokNumber(data.user.likes);
+          preview.innerHTML = `
+            <span class="text-[#00f2ea]">♪</span>
+            <span class="text-[#e5e5e5]">${followers}</span>
+            <span class="text-[#525252]">followers</span>
+            <span class="text-[#525252]">·</span>
+            <span class="text-[#fe2c55]">♥</span>
+            <span class="text-[#e5e5e5]">${likes}</span>
+            <span class="text-[#525252]">likes</span>
+          `;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+  }
+
+  // Load TikTok preview from cache on init
+  document.querySelectorAll('.tiktok-preview').forEach((preview) => {
+    const tiktokUsername = preview.getAttribute('data-tiktok-username');
+    if (!tiktokUsername) return;
+
+    // Try cache first
+    try {
+      const cached = localStorage.getItem(`tiktok-activity-${tiktokUsername}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.user) {
+          updateTikTokPreview(tiktokUsername);
+          return;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+
+    // Fetch if no cache
+    fetch(`/.netlify/functions/tiktok-activity?username=${tiktokUsername}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          // Save to cache
+          try {
+            data.fetchedAt = Date.now();
+            localStorage.setItem(`tiktok-activity-${tiktokUsername}`, JSON.stringify(data));
+          } catch {}
+          updateTikTokPreview(tiktokUsername);
         }
       })
       .catch(() => {});
