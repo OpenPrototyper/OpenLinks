@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-01-19
+
+### Added
+- **LinkedIn Quick Actions** - Expandable card with action shortcuts
+  - View Profile link
+  - Send Message link (opens LinkedIn compose, requires connection)
+  - Connect link (opens profile for connection request)
+  - Username displayed in card header with @ prefix
+  - Peek preview showing action icons when collapsed
+
+### Changed
+- Content schema now supports `linkedin` feed type with `linkedinUsername` field
+- ExpandableCard supports four feed types: `github`, `github-org`, `discord`, `linkedin`
+
 ## [1.3.0] - 2026-01-19
 
 ### Added

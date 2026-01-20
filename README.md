@@ -14,6 +14,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
   - **GitHub** - Contribution graphs, recent activity, streak tracking
   - **GitHub Org** - Popular repos, organization activity
   - **Discord** - Online members, voice channels, current activities
+  - **LinkedIn** - Quick actions (view profile, message, connect)
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -58,6 +59,7 @@ feed: "github"  # Optional: enables activity preview
 | `github` | Contribution graph, recent activity, streak | URL with GitHub username |
 | `github-org` | Popular repos, org activity | URL with GitHub org name |
 | `discord` | Online members, voice channels, activities | `serverId` (Discord server ID) |
+| `linkedin` | Quick actions (profile, message, connect) | `linkedinUsername` |
 
 **Discord example:**
 ```md
@@ -72,6 +74,20 @@ serverId: "1234567890123456789"
 ```
 
 To get your Discord server ID: Enable Developer Mode in Discord settings, then right-click your server icon and select "Copy Server ID". You must also enable the Server Widget in Server Settings > Widget.
+
+**LinkedIn example:**
+```md
+---
+name: "LinkedIn"
+url: "https://www.linkedin.com/in/yourname/"
+icon: "linkedin"
+order: 3
+feed: "linkedin"
+linkedinUsername: "yourname"
+---
+```
+
+The LinkedIn username is the part after `/in/` in your profile URL.
 
 ## Deployment
 
