@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-01-19
+
+### Added
+- **Substack Activity Feed** - Live newsletter posts with engagement stats
+  - Recent posts with title, subtitle, and publish date
+  - Engagement metrics: likes, comments, restacks
+  - Publication header with logo and author name
+  - "NEW" badge for posts within last 48 hours
+  - Peek preview showing latest post title when collapsed
+  - No API token required - uses public RSS feed
+
+### Changed
+- Content schema now supports `substack` feed type with `publication` field
+- ExpandableCard supports five feed types: `github`, `github-org`, `discord`, `linkedin`, `substack`
+
 ## [1.4.0] - 2026-01-19
 
 ### Added

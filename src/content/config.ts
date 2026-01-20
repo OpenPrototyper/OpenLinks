@@ -8,9 +8,10 @@ const links = defineCollection({
     icon: z.string(),
     order: z.number(),
     embed: z.string().optional(),
-    feed: z.enum(['github', 'github-org', 'discord', 'linkedin']).optional(),
+    feed: z.enum(['github', 'github-org', 'discord', 'linkedin', 'substack']).optional(),
     serverId: z.string().optional(), // Discord server ID for widget API
     linkedinUsername: z.string().optional(), // LinkedIn username for quick actions
+    publication: z.string().optional(), // Substack publication name (e.g., "example" for example.substack.com)
   }),
 });
 

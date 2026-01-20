@@ -15,6 +15,7 @@ A minimal, self-hosted Linktree alternative with PostHog analytics.
   - **GitHub Org** - Popular repos, organization activity
   - **Discord** - Online members, voice channels, current activities
   - **LinkedIn** - Quick actions (view profile, message, connect)
+  - **Substack** - Recent posts with likes, comments, restacks
 - **Analytics** - PostHog integration for tracking
 - **Privacy-first** - Cookie consent banner, GDPR compliant
 - **Brand colors** - Each link has platform-specific hover colors
@@ -60,6 +61,7 @@ feed: "github"  # Optional: enables activity preview
 | `github-org` | Popular repos, org activity | URL with GitHub org name |
 | `discord` | Online members, voice channels, activities | `serverId` (Discord server ID) |
 | `linkedin` | Quick actions (profile, message, connect) | `linkedinUsername` |
+| `substack` | Recent posts with engagement stats | `publication` (subdomain name) |
 
 **Discord example:**
 ```md
@@ -88,6 +90,20 @@ linkedinUsername: "yourname"
 ```
 
 The LinkedIn username is the part after `/in/` in your profile URL.
+
+**Substack example:**
+```md
+---
+name: "Substack"
+url: "https://yourname.substack.com"
+icon: "substack"
+order: 6
+feed: "substack"
+publication: "yourname"
+---
+```
+
+The publication is the subdomain of your Substack (e.g., `yourname` for `yourname.substack.com`). No API token required.
 
 ## Deployment
 

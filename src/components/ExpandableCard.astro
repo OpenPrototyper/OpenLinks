@@ -2,19 +2,21 @@
 import GitHubActivity from './GitHubActivity.tsx';
 import GitHubOrgActivity from './GitHubOrgActivity.tsx';
 import DiscordActivity from './DiscordActivity.tsx';
+import SubstackActivity from './SubstackActivity.tsx';
 
 interface Props {
   name: string;
   url: string;
   icon: string;
-  feed?: 'github' | 'github-org' | 'discord' | 'linkedin';
+  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack';
   username?: string;
   org?: string;
   serverId?: string;
   linkedinUsername?: string;
+  publication?: string;
 }
 
-const { name, url, icon, feed, username, org, serverId, linkedinUsername } = Astro.props;
+const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication } = Astro.props;
 
 const brandColors: Record<string, { color: string; glow: string }> = {
   github: { color: '#ffffff', glow: 'rgba(255,255,255,0.15)' },
@@ -53,8 +55,8 @@ const userIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
 const orgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path><path d="M9 9h1"></path><path d="M9 13h1"></path><path d="M9 17h1"></path></svg>`;
 const linkedinIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="6" height="14"></rect><rect x="16" y="7" width="6" height="14"></rect><rect x="9" y="3" width="6" height="18"></rect></svg>`;
 
-// Get the handle to display (no handle for Discord - server name shown in feed)
-const handle = username || org || linkedinUsername;
+// Get the handle to display (no handle for Discord - server name shown in feed, no icon for Substack - already shown)
+const handle = username || org || linkedinUsername || publication;
 const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon : feed === 'linkedin' ? linkedinIcon : null;
 ---
 
@@ -65,6 +67,7 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
   data-username={username}
   data-org={org}
   data-server-id={serverId}
+  data-publication={publication}
 >
   <!-- Header (always visible) -->
   <div class="card-header flex items-center w-full p-4">
@@ -259,6 +262,28 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       </div>
     </div>
   )}
+
+  <!-- Substack: Peek preview (visible when collapsed) -->
+  {feed === 'substack' && publication && (
+    <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
+      <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
+        <div class="substack-preview flex gap-2 items-center text-xs" data-publication={publication}>
+          <span class="text-[#ff6719]">◈</span>
+          <span class="text-[#a1a1a1]">Loading posts...</span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Substack: Expandable content -->
+  {feed === 'substack' && publication && (
+    <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
+      <div class="px-4 pb-4 pt-2">
+        <SubstackActivity client:idle publication={publication} profileUrl={url} />
+      </div>
+    </div>
+  )}
 </div>
 
 <style>
@@ -405,6 +430,24 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
     return events.filter(e => isRecentActivity(e.time)).length;
   }
 
+  // Check if Substack post is recent (within 48h for posts since they're less frequent)
+  function isSubstackRecent(timeStr: string): boolean {
+    if (!timeStr) return false;
+    if (timeStr.endsWith('m')) return true; // minutes
+    if (timeStr.endsWith('h')) return true; // hours (within 24h)
+    if (timeStr.endsWith('d')) {
+      const days = parseInt(timeStr);
+      return days <= 2; // Within 2 days
+    }
+    return false;
+  }
+
+  // Count recent Substack posts
+  function countSubstackRecentPosts(posts: Array<{ time: string }>): number {
+    if (!posts || !Array.isArray(posts)) return 0;
+    return posts.filter(p => isSubstackRecent(p.time)).length;
+  }
+
   // Update the activity dot and tooltip with count
   function updateActivityDot(card: Element, count: number) {
     const dot = card.querySelector('.activity-dot');
@@ -479,6 +522,21 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       }
     }
 
+    // Load Substack recent posts count from localStorage cache
+    const publication = card.getAttribute('data-publication');
+    if (publication) {
+      try {
+        const cached = localStorage.getItem(`substack-activity-${publication}`);
+        if (cached) {
+          const data = JSON.parse(cached);
+          const recentCount = countSubstackRecentPosts(data.posts);
+          updateActivityDot(card, recentCount);
+        }
+      } catch {
+        // Silent fail
+      }
+    }
+
     btn.addEventListener('click', () => {
       const isExpanded = card.getAttribute('data-expanded') === 'true';
       const willExpand = !isExpanded;
@@ -488,8 +546,9 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       // Track expansion with PostHog
       if (willExpand && typeof window !== 'undefined' && (window as any).posthog) {
         const serverId = card.getAttribute('data-server-id');
-        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : 'unknown';
-        const handle = username || org || serverId || 'unknown';
+        const publication = card.getAttribute('data-publication');
+        const feedType = username ? 'github' : org ? 'github-org' : serverId ? 'discord' : publication ? 'substack' : 'unknown';
+        const handle = username || org || serverId || publication || 'unknown';
         (window as any).posthog.capture('activity_feed_expanded', {
           feed_type: feedType,
           handle: handle,
@@ -529,6 +588,17 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
       updateActivityDot(card, onlineCount);
       // Also update the preview
       updateDiscordPreview(serverId, onlineCount);
+    }
+  }) as EventListener);
+
+  // Update dot when Substack activity is fetched (custom event from React)
+  document.addEventListener('substack-activity-loaded', ((e: CustomEvent) => {
+    const { publication, recentCount } = e.detail;
+    const card = document.querySelector(`[data-publication="${publication}"]`);
+    if (card) {
+      updateActivityDot(card, recentCount);
+      // Also update the preview
+      updateSubstackPreview(publication);
     }
   }) as EventListener);
 
@@ -684,6 +754,67 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
             data.fetchedAt = Date.now();
             localStorage.setItem(`github-activity-${username}`, JSON.stringify(data));
           } catch {}
+        }
+      })
+      .catch(() => {});
+  });
+
+  // Update Substack preview with latest post title
+  function updateSubstackPreview(publication: string) {
+    const preview = document.querySelector(`.substack-preview[data-publication="${publication}"]`);
+    if (!preview) return;
+
+    try {
+      const cached = localStorage.getItem(`substack-activity-${publication}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.posts && data.posts.length > 0) {
+          const latestPost = data.posts[0];
+          const title = latestPost.title.length > 40
+            ? latestPost.title.slice(0, 40) + '...'
+            : latestPost.title;
+          preview.innerHTML = `
+            <span class="text-[#ff6719]">◈</span>
+            <span class="text-[#e5e5e5] truncate">${title}</span>
+            <span class="text-[#525252]">· ${latestPost.time}</span>
+          `;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+  }
+
+  // Load Substack preview from cache on init
+  document.querySelectorAll('.substack-preview').forEach((preview) => {
+    const publication = preview.getAttribute('data-publication');
+    if (!publication) return;
+
+    // Try cache first
+    try {
+      const cached = localStorage.getItem(`substack-activity-${publication}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        if (data.posts && data.posts.length > 0) {
+          updateSubstackPreview(publication);
+          return;
+        }
+      }
+    } catch {
+      // Silent fail
+    }
+
+    // Fetch if no cache
+    fetch(`/.netlify/functions/substack-activity?publication=${publication}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.posts && data.posts.length > 0) {
+          // Save to cache
+          try {
+            data.fetchedAt = Date.now();
+            localStorage.setItem(`substack-activity-${publication}`, JSON.stringify(data));
+          } catch {}
+          updateSubstackPreview(publication);
         }
       })
       .catch(() => {});

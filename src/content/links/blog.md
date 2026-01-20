@@ -1,6 +1,8 @@
 ---
 name: "Substack"
-url: "https://substack.com/@openprototype"
+url: "https://openprototype.substack.com"
 icon: "substack"
-order: 5
+order: 10
+feed: "substack"
+publication: "openprototype"
 ---
