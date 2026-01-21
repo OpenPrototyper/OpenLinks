@@ -71,6 +71,8 @@ function getGitHubIdentifier(url: string): string | undefined {
               tiktokVideoIds={link.data.feed === 'tiktok' ? link.data.tiktokVideoIds : undefined}
               youtubeChannelId={link.data.feed === 'youtube' ? link.data.youtubeChannelId : undefined}
               youtubeHandle={link.data.feed === 'youtube' ? link.data.youtubeHandle : undefined}
+              instagramUsername={link.data.feed === 'instagram' ? link.data.instagramUsername : undefined}
+              instagramPostIds={link.data.feed === 'instagram' ? link.data.instagramPostIds : undefined}
             />
           ) : (
             <LinkCard

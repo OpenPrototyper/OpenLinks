@@ -313,8 +313,15 @@ export default function GitHubActivity({ username, profileUrl }: Props) {
 
   const weeks = getWeeks(activity.contributions?.days || []);
 
-  // Extract repo link from event
-  const getRepoUrl = (repo: string) => `https://github.com/${username}/${repo}`;
+  // Extract repo link from event - handles both "repo" and "owner/repo" formats
+  const getRepoUrl = (repo: string) => {
+    if (repo.includes('/')) {
+      // Full path like "owner/repo" - link directly
+      return `https://github.com/${repo}`;
+    }
+    // Short name like "repo" - prepend username
+    return `https://github.com/${username}/${repo}`;
+  };
 
   return (
     <div className="space-y-4" onMouseEnter={handlePrefetch} onTouchStart={handlePrefetch}>

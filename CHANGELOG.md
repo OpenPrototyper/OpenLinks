@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0] - 2026-01-20
+
+### Added
+- **Instagram Quick Actions** - Expandable card with action shortcuts
+  - View Profile link
+  - Send Message link (opens Instagram DM via ig.me)
+  - Follow link (opens profile page)
+  - Username displayed in card header with @ prefix
+  - Peek preview showing action icons when collapsed
+  - Instagram gradient brand color (#E4405F)
+
+### Fixed
+- **Reddit Activity Feed** - Fixed production API failures
+  - Changed User-Agent from bot-style to browser-style to avoid Reddit blocking
+  - Reddit blocks requests from data center IPs with bot User-Agents
+  - Feed now works in production on Netlify
+- **GitHub Activity Feed** - Fixed starred/forked repo links pointing to wrong owner
+  - Starred repos now link to the actual repo (e.g., `github.com/facebook/react`)
+  - Previously incorrectly linked to user's account (e.g., `github.com/yourname/react`)
+
+### Changed
+- Content schema now supports `instagram` feed type with `instagramUsername` field
+- ExpandableCard supports nine feed types: `github`, `github-org`, `discord`, `linkedin`, `substack`, `reddit`, `tiktok`, `youtube`, `instagram`
+
+### Technical Notes
+- Instagram blocks all unauthenticated server-side requests (profile scraping and oEmbed API)
+- Quick actions approach chosen for reliability - no external API dependencies
+- Full Instagram data would require Graph API with OAuth (business account required)
+
 ## [1.8.0] - 2026-01-19
 
 ### Added

@@ -127,7 +127,7 @@ async function fetchRedditUser(username: string): Promise<RedditUser | null> {
   try {
     const res = await fetch(`https://www.reddit.com/user/${username}/about.json`, {
       headers: {
-        'User-Agent': 'OpenLinks-Activity-Feed/1.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/json',
       },
     });
@@ -149,7 +149,7 @@ async function fetchRedditActivity(username: string): Promise<RedditActivity[]> 
   try {
     const res = await fetch(`https://www.reddit.com/user/${username}.json?limit=15`, {
       headers: {
-        'User-Agent': 'OpenLinks-Activity-Feed/1.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/json',
       },
     });

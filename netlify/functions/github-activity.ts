@@ -68,33 +68,36 @@ function formatRelativeTime(dateString: string): string {
 }
 
 function processEvent(event: GitHubEvent): ProcessedEvent | null {
-  const repo = event.repo.name.split('/')[1] || event.repo.name;
+  const fullRepo = event.repo.name; // e.g., "owner/repo"
+  const shortRepo = event.repo.name.split('/')[1] || event.repo.name; // e.g., "repo"
   const time = formatRelativeTime(event.created_at);
 
   switch (event.type) {
     case 'PushEvent':
       const commitMsg = event.payload.commits?.[0]?.message?.split('\n')[0] || 'Pushed code';
-      return { type: 'push', repo, time, message: `Pushed to ${repo}: ${commitMsg.slice(0, 50)}` };
+      return { type: 'push', repo: shortRepo, time, message: `Pushed to ${shortRepo}: ${commitMsg.slice(0, 50)}` };
 
     case 'PullRequestEvent':
-      return { type: 'pr', repo, time, message: `${event.payload.action} PR on ${repo}` };
+      return { type: 'pr', repo: shortRepo, time, message: `${event.payload.action} PR on ${shortRepo}` };
 
     case 'IssuesEvent':
-      return { type: 'issue', repo, time, message: `${event.payload.action} issue on ${repo}` };
+      return { type: 'issue', repo: shortRepo, time, message: `${event.payload.action} issue on ${shortRepo}` };
 
     case 'WatchEvent':
-      return { type: 'star', repo, time, message: `Starred ${repo}` };
+      // Use full repo name for starred repos (they belong to others)
+      return { type: 'star', repo: fullRepo, time, message: `Starred ${fullRepo}` };
 
     case 'ForkEvent':
-      return { type: 'fork', repo, time, message: `Forked ${repo}` };
+      // Use full repo name for forked repos (they belong to others)
+      return { type: 'fork', repo: fullRepo, time, message: `Forked ${fullRepo}` };
 
     case 'CreateEvent':
       const refType = event.payload.ref_type;
       const ref = event.payload.ref;
       if (refType === 'repository') {
-        return { type: 'create', repo, time, message: `Created repository ${repo}` };
+        return { type: 'create', repo: shortRepo, time, message: `Created repository ${shortRepo}` };
       }
-      return { type: 'create', repo, time, message: `Created ${refType} ${ref} on ${repo}` };
+      return { type: 'create', repo: shortRepo, time, message: `Created ${refType} ${ref} on ${shortRepo}` };
 
     default:
       return null;
