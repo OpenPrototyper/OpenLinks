@@ -8,8 +8,9 @@ const links = defineCollection({
     icon: z.string(),
     order: z.number(),
     embed: z.string().optional(),
-    feed: z.enum(['github', 'github-org', 'discord', 'linkedin', 'substack', 'reddit', 'tiktok', 'youtube', 'instagram']).optional(),
+    feed: z.enum(['github', 'github-org', 'discord', 'linkedin', 'substack', 'reddit', 'tiktok', 'youtube', 'instagram', 'contact']).optional(),
     serverId: z.string().optional(), // Discord server ID for widget API
+    contactEmail: z.string().email().optional(), // Email address shown in contact form
     linkedinUsername: z.string().optional(), // LinkedIn username for quick actions
     publication: z.string().optional(), // Substack publication name (e.g., "example" for example.substack.com)
     redditUsername: z.string().optional(), // Reddit username (without u/)

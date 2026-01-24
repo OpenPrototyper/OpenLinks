@@ -16,6 +16,13 @@ function getGitHubIdentifier(url: string): string | undefined {
 ---
 
 <Base>
+  <!-- Hidden form for Netlify Forms detection (required for JS-submitted forms) -->
+  <form name="contact" netlify hidden>
+    <input type="text" name="name" />
+    <input type="email" name="email" required />
+    <textarea name="message" required></textarea>
+  </form>
+
   <!-- Share Button -->
   <button
     id="share-btn"
@@ -73,6 +80,7 @@ function getGitHubIdentifier(url: string): string | undefined {
               youtubeHandle={link.data.feed === 'youtube' ? link.data.youtubeHandle : undefined}
               instagramUsername={link.data.feed === 'instagram' ? link.data.instagramUsername : undefined}
               instagramPostIds={link.data.feed === 'instagram' ? link.data.instagramPostIds : undefined}
+              contactEmail={link.data.feed === 'contact' ? link.data.contactEmail : undefined}
             />
           ) : (
             <LinkCard
