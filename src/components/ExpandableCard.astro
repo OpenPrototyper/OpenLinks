@@ -6,13 +6,14 @@ import SubstackActivity from './SubstackActivity.tsx';
 import RedditActivity from './RedditActivity.tsx';
 import TikTokActivity from './TikTokActivity.tsx';
 import YouTubeActivity from './YouTubeActivity.tsx';
+import TwitterActivity from './TwitterActivity.tsx';
 import ContactForm from './ContactForm.tsx';
 
 interface Props {
   name: string;
   url: string;
   icon: string;
-  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit' | 'tiktok' | 'youtube' | 'instagram' | 'contact';
+  feed?: 'github' | 'github-org' | 'discord' | 'linkedin' | 'substack' | 'reddit' | 'tiktok' | 'youtube' | 'instagram' | 'twitter' | 'contact';
   username?: string;
   org?: string;
   serverId?: string;
@@ -25,10 +26,12 @@ interface Props {
   youtubeHandle?: string;
   instagramUsername?: string;
   instagramPostIds?: string; // Comma-separated post shortcodes
+  twitterUsername?: string;
+  tweetIds?: string[]; // Tweet IDs to embed
   contactEmail?: string;
 }
 
-const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername, tiktokUsername, tiktokVideoIds, youtubeChannelId, youtubeHandle, instagramUsername, instagramPostIds, contactEmail } = Astro.props;
+const { name, url, icon, feed, username, org, serverId, linkedinUsername, publication, redditUsername, tiktokUsername, tiktokVideoIds, youtubeChannelId, youtubeHandle, instagramUsername, instagramPostIds, twitterUsername, tweetIds, contactEmail } = Astro.props;
 
 const brandColors: Record<string, { color: string; glow: string }> = {
   github: { color: '#ffffff', glow: 'rgba(255,255,255,0.15)' },
@@ -70,7 +73,7 @@ const orgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" 
 const linkedinIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="6" height="14"></rect><rect x="16" y="7" width="6" height="14"></rect><rect x="9" y="3" width="6" height="18"></rect></svg>`;
 
 // Get the handle to display (no handle for Discord - server name shown in feed, no icon for Substack - already shown)
-const handle = username || org || linkedinUsername || publication || redditUsername || tiktokUsername || youtubeHandle || instagramUsername;
+const handle = username || org || linkedinUsername || publication || redditUsername || tiktokUsername || youtubeHandle || instagramUsername || twitterUsername;
 const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon : feed === 'linkedin' ? linkedinIcon : null;
 ---
 
@@ -441,6 +444,28 @@ const typeIcon = feed === 'github' ? userIcon : feed === 'github-org' ? orgIcon 
             </div>
           </a>
         </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Twitter: Peek preview (visible when collapsed) -->
+  {feed === 'twitter' && twitterUsername && (
+    <div class="peek-preview overflow-hidden relative rounded-b-lg" style="height: 24px;">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#141414] z-10 pointer-events-none"></div>
+      <div class="px-4 opacity-65 blur-[1px] overflow-hidden">
+        <div class="flex gap-2 items-center text-xs">
+          <span class="text-[#1da1f2]">𝕏</span>
+          <span class="text-[#a1a1a1]">Latest posts...</span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Twitter: Expandable content -->
+  {feed === 'twitter' && twitterUsername && tweetIds && (
+    <div class="activity-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-out">
+      <div class="px-4 pb-4 pt-2">
+        <TwitterActivity client:idle username={twitterUsername} tweetIds={tweetIds} profileUrl={url} />
       </div>
     </div>
   )}

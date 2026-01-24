@@ -8,7 +8,7 @@ const links = defineCollection({
     icon: z.string(),
     order: z.number(),
     embed: z.string().optional(),
-    feed: z.enum(['github', 'github-org', 'discord', 'linkedin', 'substack', 'reddit', 'tiktok', 'youtube', 'instagram', 'contact']).optional(),
+    feed: z.enum(['github', 'github-org', 'discord', 'linkedin', 'substack', 'reddit', 'tiktok', 'youtube', 'instagram', 'twitter', 'contact']).optional(),
     serverId: z.string().optional(), // Discord server ID for widget API
     contactEmail: z.string().email().optional(), // Email address shown in contact form
     linkedinUsername: z.string().optional(), // LinkedIn username for quick actions
@@ -20,6 +20,8 @@ const links = defineCollection({
     youtubeHandle: z.string().optional(), // YouTube handle (without @)
     instagramUsername: z.string().optional(), // Instagram username (without @)
     instagramPostIds: z.string().optional(), // Comma-separated post shortcodes (from instagram.com/p/SHORTCODE/)
+    twitterUsername: z.string().optional(), // Twitter/X username (without @)
+    tweetIds: z.array(z.string()).optional(), // Tweet IDs to embed
   }),
 });
 

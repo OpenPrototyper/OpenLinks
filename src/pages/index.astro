@@ -82,6 +82,8 @@ function getGitHubIdentifier(url: string): string | undefined {
               youtubeHandle={link.data.feed === 'youtube' ? link.data.youtubeHandle : undefined}
               instagramUsername={link.data.feed === 'instagram' ? link.data.instagramUsername : undefined}
               instagramPostIds={link.data.feed === 'instagram' ? link.data.instagramPostIds : undefined}
+              twitterUsername={link.data.feed === 'twitter' ? link.data.twitterUsername : undefined}
+              tweetIds={link.data.feed === 'twitter' ? link.data.tweetIds : undefined}
               contactEmail={link.data.feed === 'contact' ? link.data.contactEmail : undefined}
             />
           ) : (

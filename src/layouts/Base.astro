@@ -47,7 +47,15 @@ const ogImage = `${siteUrl}/og-image.png`;
     <PostHog />
   </head>
   <body class="min-h-screen bg-[#0a0a0a] text-[#fafafa] antialiased">
-    <slot />
+    <!-- Background Video -->
+    <div class="fixed inset-0 z-0 flex items-center justify-center pointer-events-none overflow-hidden">
+      <video autoplay muted loop playsinline class="w-full h-auto opacity-20">
+        <source src="/bg.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="relative z-10">
+      <slot />
+    </div>
     <CookieConsent />
   </body>
 </html>
