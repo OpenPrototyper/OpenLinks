@@ -22,6 +22,8 @@ export default function ContactForm({ recipientEmail }: ContactFormProps) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           'form-name': 'contact',
+          'subject': `New message from ${formData.name || 'Anonymous'}`,
+          'bot-field': '',
           ...formData,
         }).toString(),
       });
@@ -66,10 +68,18 @@ export default function ContactForm({ recipientEmail }: ContactFormProps) {
       name="contact"
       method="POST"
       data-netlify="true"
+      data-netlify-honeypot="bot-field"
       onSubmit={handleSubmit}
       className="flex flex-col gap-3"
     >
       <input type="hidden" name="form-name" value="contact" />
+      <input type="hidden" name="subject" value={`New message from ${formData.name || 'Anonymous'}`} />
+      {/* Honeypot field - hidden from users, bots fill it and get filtered */}
+      <p className="hidden">
+        <label>
+          Don't fill this out: <input name="bot-field" />
+        </label>
+      </p>
 
       <div className="flex gap-3">
         <input
